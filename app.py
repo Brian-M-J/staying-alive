@@ -11,7 +11,7 @@ app = Flask(__name__)
 conn = sqlite3.connect('users.db', check_same_thread=False)
 cursor = conn.cursor()
 cursor.execute('''CREATE TABLE IF NOT EXISTS users
-                  (username TEXT, password TEXT, address TEXT, location TEXT)''')
+                  (username TEXT, password TEXT, salt TEXT, address TEXT, location TEXT)''')
 conn.commit()
 
 # Encryption/Decryption functions
@@ -47,8 +47,8 @@ def signup():
         location_encrypted, location_key = encrypt(location)
 
         # Store the user details in the database
-        cursor.execute('INSERT INTO users VALUES (?, ?, ?, ?)',
-                       (username, password_hash, address_encrypted, location_encrypted))
+        cursor.execute('INSERT INTO users VALUES (?, ?, ?, ?, ?)',
+                       (username, password_hash.hex(), salt.hex(), address_encrypted, location_encrypted))
         conn.commit()
 
         return redirect('/welcome?username=' + username)
@@ -67,13 +67,16 @@ def signin():
 
         if user:
             # Verify the password
-            stored_password = user[1]
-            salt = user[2]
+            stored_password_hash = bytes.fromhex(user[1])
+            salt = bytes.fromhex(user[2])
             password_hash = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
-            if password_hash == stored_password:
+            if password_hash == stored_password_hash:
+                print('Login successful')
                 return redirect('/welcome?username=' + username)
 
         error_message = "Login details incorrect. Please try again."
+        print('User details incorrect.')
+        print(f'Password Hash: {password_hash} Stored Password Hash: {stored_password_hash}')
         return render_template('signin.html', error_message=error_message)
 
     return render_template('signin.html')
