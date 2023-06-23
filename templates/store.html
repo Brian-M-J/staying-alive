@@ -30,10 +30,16 @@
             border-radius: 4px;
         }
     </style>
+    <script>
+        function goBack() {
+            // Redirect the user to the previous page
+            window.history.back();
+        }
+    </script>
 </head>
 <body>
     <h1>Beacon Store</h1>
     <p>Welcome to the Beacon Store! Explore our wide range of emergency preparedness and safety products.</p>
-    <a href="/">Go Back</a>
+    <button onclick="goBack()">Go Back</button>
 </body>
 </html>
