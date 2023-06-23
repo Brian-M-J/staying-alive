@@ -248,10 +248,10 @@ def checklist():
 # Route for the store page
 @app.route("/store")
 def store():
-    # Add any desired logic for the store page
-    # ...
-
-    return render_template("store.html")
+    # Retrieve the username from the query parameters
+    username = request.args.get("username")
+    # Pass the username as a parameter to the store.html template
+    return render_template("store.html", username=username)
 
 
 if __name__ == "__main__":
