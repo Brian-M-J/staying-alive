@@ -1,6 +1,6 @@
 venv/
 env/
 .vscode/
-users.db
-disaster.db
-app.log
+/users.db
+/disaster.db
+/app.log
