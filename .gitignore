@@ -2,3 +2,5 @@
 venv/
 env/
 .vscode/
+*.db
+*.log
