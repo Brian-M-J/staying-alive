@@ -1,0 +1,13 @@
+2023-06-24 07:30:02,600 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2023-06-24 07:30:02,600 - INFO - [33mPress CTRL+C to quit[0m
+2023-06-24 07:30:08,046 - INFO - 127.0.0.1 - - [24/Jun/2023 07:30:08] "GET /signin HTTP/1.1" 200 -
+2023-06-24 07:30:11,570 - INFO - 127.0.0.1 - - [24/Jun/2023 07:30:11] "[32mPOST /signin HTTP/1.1[0m" 302 -
+2023-06-24 07:30:11,579 - INFO - 127.0.0.1 - - [24/Jun/2023 07:30:11] "GET /welcome?username=Brian HTTP/1.1" 200 -
+2023-06-24 07:30:12,684 - INFO - 127.0.0.1 - - [24/Jun/2023 07:30:12] "GET /beacon?username=Brian HTTP/1.1" 200 -
+2023-06-24 07:30:17,295 - DEBUG - Storing distress signal: EEEEEEEEEEEEEEEEEEEEEEEEE, username: Brian, address: DSATM, location: 12.959744, 77.5880704
+2023-06-24 07:30:17,307 - DEBUG - Sending browser notification to Brian: EEEEEEEEEEEEEEEEEEEEEEEEE, DSATM, 12.959744, 77.5880704, 
+2023-06-24 07:30:17,307 - DEBUG - Subscription info not provided.
+2023-06-24 07:30:17,307 - DEBUG - Stored distress signal and sent browser notification.
+2023-06-24 07:30:17,308 - INFO - 127.0.0.1 - - [24/Jun/2023 07:30:17] "[32mPOST /beacon?username=Brian HTTP/1.1[0m" 302 -
+2023-06-24 07:30:17,313 - INFO - 127.0.0.1 - - [24/Jun/2023 07:30:17] "GET /welcome?username=Brian HTTP/1.1" 200 -
