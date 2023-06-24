@@ -64,16 +64,20 @@
         }
 
         .error {
-            color: red;
+            display: block;
+            margin: 0 auto;
+
         }
-        
+
     </style>
 </head>
 
 <body>
     <h1>Sign In</h1>
     {% if error_message %}
+    
     <p class="error">{{ error_message }}</p>
+   
     {% endif %}
     <form action="/signin" method="post">
         <div class="form-group">
