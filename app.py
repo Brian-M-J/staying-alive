@@ -109,6 +109,23 @@ def checklist():
                 {
                     "id": "item1",
                     "label": "Sign up for severe weather alerts in your area.",
+                },
+                {
+                    "id": "item100",
+                    "label": "Non-perishable food items"
+
+                },
+                {
+                    "id": "item101",
+                    "label": "Bottled water"
+                },
+                {
+                    "id": "item102",
+                    "label": "Blankets or sleeping bags"
+                },
+                {
+                    "id": "item103",
+                    "label": "Ensure you have a reliable method of communication, such as a battery-powered weather radio or a smartphone with emergency alerts enabled."
                 }
             ],
         },
@@ -165,14 +182,7 @@ def checklist():
                     "id": "item16",
                     "label": "Depending on your situation, your kit might also include:",
                 },
-                {"id": "item17", "label": "- Baby food, bottles and diapers"},
-                {"id": "item18", "label": "- Pet food"},
-                {"id": "item19", "label": "- Prescription medications"},
-                {
-                    "id": "item20",
-                    "label": "- Extra eyeglasses or contact lenses and solution",
-                },
-                {"id": "item21", "label": "- Dry clothing and blankets"},
+              
             ],
         },
         {
@@ -182,7 +192,7 @@ def checklist():
                 {"id": "item23", "label": "A route for evacuation"},
                 {"id": "item24", "label": "Getting emergency alerts and warnings"},
                 {"id": "item25", "label": "Family communication"},
-                {"id": "item26", "label": "Conditions that make evacuations necessary"},
+        
                 {
                     "id": "item27",
                     "label": "Chains of command that clearly designate roles and responsibilities during an evacuation",
@@ -196,10 +206,7 @@ def checklist():
                     "id": "item30",
                     "label": "Using different channels of communication with community members, such as social media, print media, television, and radio",
                 },
-                {
-                    "id": "item31",
-                    "label": "Coordinating with utility companies to include evacuation maps alongside utility bills or posting major and alternate evacuation routes on government websites",
-                },
+            
                 {
                     "id": "item32",
                     "label": "Emergency and rescue equipment (life vests, rescue trucks, emergency lighting)",
@@ -212,23 +219,12 @@ def checklist():
                     "id": "item34",
                     "label": "Food and cooking supplies (preserved foods, disposable kitchenware)",
                 },
-                {
-                    "id": "item35",
-                    "label": "Cleanup and rebuilding products (water treatments, disinfecting solutions, waste containers)",
-                },
+              
                 {
                     "id": "item36",
                     "label": "Familiarizing emergency management teams with the procedures of the plan",
                 },
-                {"id": "item37", "label": "Identifying training needs"},
-                {
-                    "id": "item38",
-                    "label": "Assessing the effectiveness of the plan in practice",
-                },
-                {"id": "item39", "label": "Clarifying roles"},
-                {"id": "item40", "label": "Correct use of equipment"},
-                {"id": "item41", "label": "Specific skills"},
-                {"id": "item42", "label": "Adherence to specific policies"},
+            
             ],
         },
     ]
