@@ -15,10 +15,17 @@
         form {
             text-align: center;
         }
+
+        .error {
+            color: red;
+        }
     </style>
 </head>
 <body>
     <h1>Sign In</h1>
+    {% if error_message %}
+    <p class="error">{{ error_message }}</p>
+    {% endif %}
     <form action="/signin" method="post">
         <label for="username">Username:</label>
         <input type="text" name="username" id="username" required><br><br>

@@ -86,7 +86,8 @@ def signin():
 
         error_message = "Login details incorrect. Please try again."
         logging.debug("User details incorrect.")
-        logging.debug(f"Password: {password} Stored Password: {stored_password}")
+        logging.debug(f"Username: {username}")
+        logging.debug(f"Password: {password}")
         return render_template("signin.html", error_message=error_message)
 
     return render_template("signin.html")
