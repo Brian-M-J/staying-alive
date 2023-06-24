@@ -1,34 +1,51 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
-import hashlib
-import os
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
+import logging
+from flask_pywebpush import webpush
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename="app.log",
+    filemode="w",
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
 
 app = Flask(__name__)
+DATABASE = "users.db"
+
 
 # Database initialization
-conn = sqlite3.connect("users.db", check_same_thread=False)
-cursor = conn.cursor()
-cursor.execute(
-    """CREATE TABLE IF NOT EXISTS users
-                  (username TEXT, password TEXT, salt TEXT, address TEXT, location TEXT)"""
-)
-conn.commit()
+def create_user_table():
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute(
+        "CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT, location TEXT, address TEXT, subscription_info TEXT)"
+    )
+    conn.commit()
+    conn.close()
 
 
-# Encryption/Decryption functions
-def encrypt(text):
-    key = os.urandom(16)
-    cipher = AES.new(key, AES.MODE_ECB)
-    cipher_text = cipher.encrypt(pad(text.encode(), AES.block_size))
-    return cipher_text, key
+def insert_user(username, password, location, address):
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO users (username, password, location, address) VALUES (?, ?, ?, ?)",
+        (username, password, location, address),
+    )
+    conn.commit()
+    conn.close()
 
 
-def decrypt(cipher_text, key):
-    cipher = AES.new(key, AES.MODE_ECB)
-    text = unpad(cipher.decrypt(cipher_text), AES.block_size)
-    return text.decode()
+# Create the disaster table
+def create_disaster_table():
+    conn = sqlite3.connect("disaster.db")
+    cursor = conn.cursor()
+    cursor.execute(
+        "CREATE TABLE IF NOT EXISTS disaster (username TEXT, signal TEXT, address TEXT, location TEXT)"
+    )
+    conn.commit()
+    conn.close()
 
 
 @app.route("/")
@@ -40,39 +57,19 @@ def index():
 def signup():
     if request.method == "POST":
         username = request.form["username"]
-        password = request.form["password"]
-        address = request.form["address"]
         location = request.form["location"]
-
-        # Hash and salt the password
-        salt = os.urandom(16)
-        password_hash = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 100000)
-
-        # Encrypt the address and location
-        address_encrypted, address_key = encrypt(address)
-        location_encrypted, location_key = encrypt(location)
-
-        # Store the user details in the database
-        cursor.execute(
-            "INSERT INTO users VALUES (?, ?, ?, ?, ?)",
-            (
-                username,
-                password_hash.hex(),
-                salt.hex(),
-                address_encrypted,
-                location_encrypted,
-            ),
-        )
-        conn.commit()
-
-        return redirect("/welcome?username=" + username)
-
+        address = request.form["address"]
+        password = request.form["password"]
+        insert_user(username, password, location, address)
+        return redirect(url_for("welcome", username=username))
     return render_template("signup.html")
 
 
 @app.route("/signin", methods=["GET", "POST"])
 def signin():
     if request.method == "POST":
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
         username = request.form["username"]
         password = request.form["password"]
 
@@ -82,20 +79,14 @@ def signin():
 
         if user:
             # Verify the password
-            stored_password_hash = bytes.fromhex(user[1])
-            salt = bytes.fromhex(user[2])
-            password_hash = hashlib.pbkdf2_hmac(
-                "sha256", password.encode(), salt, 100000
-            )
-            if password_hash == stored_password_hash:
+            stored_password = user[1]
+            if password == stored_password:
                 print("Login successful")
-                return redirect("/welcome?username=" + username)
+                return redirect(url_for("welcome", username=username))
 
         error_message = "Login details incorrect. Please try again."
-        print("User details incorrect.")
-        print(
-            f"Password Hash: {password_hash} Stored Password Hash: {stored_password_hash}"
-        )
+        logging.debug("User details incorrect.")
+        logging.debug(f"Password: {password} Stored Password: {stored_password}")
         return render_template("signin.html", error_message=error_message)
 
     return render_template("signin.html")
@@ -254,5 +245,77 @@ def store():
     return render_template("store.html", username=username)
 
 
+# Route for the beacon page
+@app.route("/beacon", methods=["GET", "POST"])
+def beacon():
+    username = request.args["username"]
+    if request.method == "POST":
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE username=?", (username,))
+        user = cursor.fetchone()
+        if user:
+            password = user[1]
+            location = user[2]
+            address = user[3]
+        signal = request.form["signal"]
+        subscription_info = request.form.get("subscription_info")
+        store_distress_signal(username, signal, address, location)
+        send_browser_notification(
+            username, signal, address, location, subscription_info
+        )
+        logging.debug("Stored distress signal and sent browser notification.")
+        return redirect("/welcome?username=" + username)
+    return render_template("beacon.html", username=username)
+
+
+def retrieve_user_data(username):
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute("SELECT location, address FROM users WHERE username=?", (username,))
+    result = cursor.fetchone()
+    if result:
+        location, address = result
+        return location, address
+    return None, None
+
+
+# Store the distress signal, username, address, and location in the disaster.db database
+def store_distress_signal(username, signal, address, location):
+    logging.debug(
+        f"Storing distress signal: {signal}, username: {username}, address: {address}, location: {location}"
+    )
+    conn = sqlite3.connect("disaster.db")
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO disaster (username, signal, address, location) VALUES (?, ?, ?, ?)",
+        (username, signal, address, location),
+    )
+    conn.commit()
+    conn.close()
+
+
+# Send a browser notification to the user with the distress signal, address, and location
+def send_browser_notification(username, signal, address, location, subscription_info):
+    logging.debug(
+        f"Sending browser notification to {username}: {signal}, {address}, {location}, {subscription_info}"
+    )
+    if subscription_info:
+        try:
+            webpush(
+                subscription_info,
+                data=signal,
+                vapid_private_key="your_vapid_private_key",
+                vapid_claims={"sub": "mailto:your_email@example.com"},
+            )
+            logging.debug("Browser notification sent successfully.")
+        except Exception as e:
+            logging.debug("Error sending browser notification:", str(e))
+    else:
+        logging.debug("Subscription info not provided.")
+
+
 if __name__ == "__main__":
+    create_user_table()
+    create_disaster_table()
     app.run()
