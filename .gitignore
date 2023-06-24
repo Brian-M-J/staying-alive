@@ -4,3 +4,4 @@ env/
 /users.db
 /disaster.db
 /app.log
+*.log

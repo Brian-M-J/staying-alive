@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
 import logging
-from flask_pywebpush import webpush
 
 # Configure logging
 logging.basicConfig(
@@ -20,7 +19,7 @@ def create_user_table():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
     cursor.execute(
-        "CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT, location TEXT, address TEXT, subscription_info TEXT)"
+        "CREATE TABLE IF NOT EXISTS users (username TEXT, password TEXT, location TEXT, address TEXT)"
     )
     conn.commit()
     conn.close()
@@ -86,7 +85,8 @@ def signin():
 
         error_message = "Login details incorrect. Please try again."
         logging.debug("User details incorrect.")
-        logging.debug(f"Password: {password} Stored Password: {stored_password}")
+        logging.debug(f"Username: {username}")
+        logging.debug(f"Password: {password}")
         return render_template("signin.html", error_message=error_message)
 
     return render_template("signin.html")
@@ -255,12 +255,8 @@ def beacon():
             location = user[2]
             address = user[3]
         signal = request.form["signal"]
-        subscription_info = request.form.get("subscription_info")
         store_distress_signal(username, signal, address, location)
-        send_browser_notification(
-            username, signal, address, location, subscription_info
-        )
-        logging.debug("Stored distress signal and sent browser notification.")
+        logging.debug("Stored distress signal successfully.")
         return redirect("/welcome?username=" + username)
     return render_template("beacon.html", username=username)
 
@@ -289,27 +285,6 @@ def store_distress_signal(username, signal, address, location):
     )
     conn.commit()
     conn.close()
-
-
-# Send a browser notification to the user with the distress signal, address, and location
-def send_browser_notification(username, signal, address, location, subscription_info):
-    logging.debug(
-        f"Sending browser notification to {username}: {signal}, {address}, {location}, {subscription_info}"
-    )
-    if subscription_info:
-        try:
-            webpush(
-                subscription_info,
-                data=signal,
-                vapid_private_key="your_vapid_private_key",
-                vapid_claims={"sub": "mailto:your_email@example.com"},
-            )
-            logging.debug("Browser notification sent successfully.")
-        except Exception as e:
-            logging.debug("Error sending browser notification:", str(e))
-    else:
-        logging.debug("Subscription info not provided.")
-
 
 if __name__ == "__main__":
     create_user_table()
